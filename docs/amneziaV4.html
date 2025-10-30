@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Копирование ссылки VPN</title>
+    <style>
+      body {
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        padding: 16px;
+        line-height: 1.4;
+      }
+      h3 {
+        word-break: break-all;
+        white-space: normal;
+        -webkit-user-select: all;
+        user-select: all;
+      }
+      .notice {
+        margin-top: 8px;
+        font-size: 0.95rem;
+      }
+      .notice.ok {
+        color: #2e7d32;
+      }
+      .notice.warn {
+        color: #b3261e;
+      }
+      .actions {
+        margin-top: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      button {
+        padding: 8px 12px;
+        border: 1px solid #1f6feb;
+        border-radius: 6px;
+        background: #1f6feb;
+        color: #fff;
+        cursor: pointer;
+      }
+      button:hover {
+        filter: brightness(0.95);
+      }
+      button:active {
+        transform: translateY(1px);
+      }
+      button:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+      }
+      #copyStatus {
+        font-size: 0.95rem;
+        color: #2e7d32;
+      }
+    </style>
+  </head>
+  <body>
+    <h3 id="copySource">
+      vpn://AAAHI3janVXLjpswFN3nK0asAwICAWbZdtHRVFXbkdqqQzRywCTugM3YJo-J-Pf6QR4QQqKajX3PuYdjc33Zje7EMBKCOUAYUmbc3z2rmBy7w6zNEiQDFBi-I2BuKNga4zZRxe476QrJAeMvQidDCymyi7EMx0ZOFrHM0OtDLIcrmEsgNiClhMaGJtTjfSLCc1LhlEnS8zH7RKgRQ4xDrKUcN7Bs8TixMe7ySkK5ZDl2aIfnKCWcJKSxxEjyyno0GOQc4QXr7OhIqNJSYpxWsA3Xx2UznR12Sip-21bbJlc5ZP9lcoXhhnfedTp2_WGdDNKUqveq854GVhRZrhNavn9mpf_8PW8yyKuYKNYBdze4PIqhVBv13GnkTO3UDELPMb0omptg4rgmnKR2EGVhMI-cQf9HySwnay264TkzaUk35goxRPCNAhAndFtylSBlMMFwX_6XRn0ZnvVDPRkdZn1eOZxCUDxdqx8M-ZrQV-2eJ2XvvmUdJhVFfKt5QjlXi15ug155dfMBBAOKY0eYa-lkSUkBL56-dEJXkH4FkiQT1uu1tSCyCXGwKAAGQs9KSDEgUVbzHCWPsNkNSn99evybPYEwKImZ-j_e_nz7bk5E6D1DbxHcFrz64n02P_x8GPK1FHfioSnRCQiA50-91Ld9N3SzobwSpZD-1nl9pVNfbT4xFrNOd1d9XF5T2cDFNe2DOQWYSc6LakaSKSrAaBHrUXs20zpGCjNQ5fzjlZ-N4LGEInVDJIVyExTsAGLmyKhjqeck7Oqw6v_78JIwLr-7gk6blTGqR_8AXsqrwg
+    </h3>
+    <div id="jsStatus" class="notice" role="status" aria-live="polite" aria-atomic="true"></div>
+    <noscript>
+      <div class="notice warn" role="alert">
+        Похоже, в вашем браузере отключён JavaScript. Кнопка «Скопировать» работать не будет.
+        Включите JavaScript или скопируйте ссылку вручную.
+      </div>
+    </noscript>
+    <div class="actions">
+      <button id="copyBtn" type="button">Скопировать</button>
+      <span id="copyStatus" role="status" aria-live="polite"></span>
+    </div>
+
+    <script>
+      (function () {
+        // Обновляем статус о доступности JavaScript (если скрипты выполняются, значит JS включён)
+        const jsStatus = document.getElementById('jsStatus');
+        if (jsStatus) {
+          jsStatus.textContent = 'JavaScript включён';
+          jsStatus.classList.add('ok');
+        }
+
+        const btn = document.getElementById('copyBtn');
+        const src = document.getElementById('copySource');
+        const status = document.getElementById('copyStatus');
+
+        function getText() {
+          return src && src.textContent ? src.textContent.trim() : '';
+        }
+
+        function showStatus(msg, timeout = 1600) {
+          if (!status) return;
+          status.textContent = msg;
+          if (timeout) {
+            window.clearTimeout(showStatus._t);
+            showStatus._t = window.setTimeout(() => {
+              status.textContent = '';
+            }, timeout);
+          }
+        }
+
+        async function copyModern(text) {
+          if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(text);
+            return true;
+          }
+          return false;
+        }
+
+        function copyLegacy(text) {
+          try {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.setAttribute('readonly', '');
+            ta.style.position = 'fixed';
+            ta.style.top = '0';
+            ta.style.left = '0';
+            ta.style.width = '1px';
+            ta.style.height = '1px';
+            ta.style.padding = '0';
+            ta.style.border = '0';
+            ta.style.outline = '0';
+            ta.style.boxShadow = 'none';
+            ta.style.background = 'transparent';
+            ta.style.color = 'transparent';
+            document.body.appendChild(ta);
+
+            const isIOS = /ipad|iphone|ipod/i.test(navigator.userAgent);
+            if (isIOS) {
+              const range = document.createRange();
+              range.selectNodeContents(ta);
+              const sel = window.getSelection();
+              sel.removeAllRanges();
+              ta.setSelectionRange(0, ta.value.length);
+              sel.addRange(range);
+            } else {
+              ta.focus();
+              ta.select();
+              ta.setSelectionRange(0, ta.value.length);
+            }
+
+            const ok = document.execCommand('copy');
+            document.body.removeChild(ta);
+            return ok;
+          } catch (e) {
+            return false;
+          }
+        }
+
+        async function tryShare(text) {
+          if (navigator.share) {
+            try {
+              await navigator.share({ text });
+              return true;
+            } catch (_) {
+              return false;
+            }
+          }
+          return false;
+        }
+
+        function promptFallback(text) {
+          try {
+            const p = window.prompt('Скопируйте ссылку (текст уже выделен):', text);
+            return typeof p === 'string';
+          } catch (_) {
+            return false;
+          }
+        }
+
+        async function doCopy() {
+          const text = getText();
+          if (!text) {
+            showStatus('Нет текста для копирования', 2000);
+            return;
+          }
+          btn.disabled = true;
+          try {
+            const modernOk = await copyModern(text);
+            let ok = modernOk || copyLegacy(text);
+            if (!ok) {
+              ok = await tryShare(text);
+            }
+            if (!ok) {
+              ok = promptFallback(text);
+            }
+            if (ok) {
+              showStatus('Скопировано!');
+            } else {
+              showStatus('Не удалось копировать. Выделите текст и нажмите Ctrl+C.');
+              try {
+                const range = document.createRange();
+                range.selectNodeContents(src);
+                const sel = window.getSelection();
+                sel.removeAllRanges();
+                sel.addRange(range);
+              } catch (_) {}
+            }
+          } catch (err) {
+            showStatus('Ошибка копирования');
+          } finally {
+            btn.disabled = false;
+          }
+        }
+
+        btn.addEventListener('click', doCopy);
+      })();
+    </script>
+  </body>
+</html>
